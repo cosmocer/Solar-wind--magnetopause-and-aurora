@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solar Wind, Magnetopause and Aurora — Interactive Lab v2</title>
+<style>
+:root{--ink:#17273e;--muted:#617187;--blue:#2475c3;--border:#dce4ee;--bg:#f4f7fb}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,Arial,sans-serif}main{max-width:1700px;margin:auto;padding:24px 20px 40px}h1{font-size:clamp(25px,3vw,36px);line-height:1.2;margin:0 0 8px}h2{font-size:17px;margin:0 0 12px}p{margin:0}.subtitle{color:var(--muted);max-width:1000px}header{margin-bottom:20px}
+.layout{display:grid;grid-template-columns:minmax(275px,330px) minmax(0,1fr);gap:16px;align-items:start}.panel,.metric{background:white;border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:0 3px 14px #142b4910}.controls .field{margin:0 0 19px}.field-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}.field label{font-size:13px;font-weight:700}.num{width:84px;border:1px solid #bccbd9;border-radius:7px;padding:6px;font:inherit;text-align:right;color:var(--ink)}.unit,.range-ends,.note{font-size:12px;color:var(--muted)}input[type=range]{width:100%;accent-color:var(--blue);cursor:pointer}.range-ends{display:flex;justify-content:space-between}.actions{display:flex;flex-wrap:wrap;gap:8px}button{background:#fff;color:var(--ink);font-weight:650;border:1px solid #b6c7da;border-radius:8px;padding:8px 10px;cursor:pointer}button:hover{background:#edf4fd}button.primary{background:#246fba;color:white;border-color:#246fba}.check{display:flex;align-items:center;gap:7px;margin-top:13px;font-size:13px;cursor:pointer}
+.right{display:grid;gap:14px}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.metric{padding:12px}.metric small{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:clamp(20px,2vw,29px);white-space:nowrap}.metric strong span{font-size:13px;font-weight:400;color:var(--muted)}.plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.plot-panel{min-width:0;padding:14px 10px}.plot-head{padding:0 5px}.plot-head h2{margin:0 0 4px}.legend{display:flex;flex-wrap:wrap;gap:9px;font-size:11px;color:var(--muted)}.line{display:inline-block;width:16px;border-top:3px solid;vertical-align:middle;margin-right:3px}.shock{border-color:#d53535}.mp{border-color:#16894c}.wind{border-color:#2475c3}.comp{border-color:#a8aeb8;border-top-style:dashed}canvas{display:block;width:100%;height:440px}.plot-foot{text-align:center;color:var(--muted);font-size:12px}.aurora-readout{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-size:12px;margin:4px}.aurora-readout strong{color:#6540a3}
+.infogrid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:16px}.info{font-size:13px;color:#485a70}.info p+p{margin-top:8px}.formula{font-family:ui-monospace,Consolas,monospace;background:#eff3f8;padding:7px 9px;border-radius:7px;overflow-wrap:anywhere;margin:7px 0}.footnote{font-size:12px;color:var(--muted);margin-top:12px}.range-warning{font-size:12px;color:#965323;min-height:1.4em}.mode-field{margin-bottom:20px}.mode-field label{display:block;font-size:13px;font-weight:700;margin-bottom:5px}.mode-field select{width:100%;padding:8px;border:1px solid #bccbd9;border-radius:7px;background:white;color:var(--ink);font:inherit}.aurora-status{font-size:12px;color:var(--muted);padding:0 5px}.aurora-status.warning{color:#965323}.coupling{font-weight:650;color:#6540a3}
+@media(max-width:1200px){.layout{grid-template-columns:1fr}.controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}.controls h2,.controls .actions,.controls .check{grid-column:1/-1}}
+@media(max-width:760px){.plots,.infogrid{grid-template-columns:1fr}}
+@media(max-width:570px){main{padding:16px 10px 30px}.controls{display:block}.metrics{grid-template-columns:1fr}.metric{display:flex;justify-content:space-between;align-items:center}.metric strong{font-size:23px}canvas{height:390px}.panel{padding:14px}}
+</style>
+</head>
+<body><main>
+<header><h1>Solar wind, magnetopause and aurora</h1><p class="subtitle">Interactive undergraduate exercise · Dynamic pressure controls magnetopause compression; sustained solar-wind coupling influences the statistical auroral oval. Switch to Kp mode to examine an independent activity index.</p></header>
+<div class="layout"><section class="panel controls" aria-label="Model controls"><h2>Adjust the conditions</h2>
+<div class="field"><div class="field-top"><label for="vsw">Solar-wind speed, V<sub>sw</sub></label><div><input id="vswNumber" class="num" type="number" min="250" max="1000" step="10" value="400" aria-label="Solar wind speed number"> <span class="unit">km/s</span></div></div><input id="vsw" type="range" min="250" max="1000" step="10" value="400"><div class="range-ends"><span>250 km/s</span><span>1000 km/s</span></div></div>
+<div class="field"><div class="field-top"><label for="nsw">Solar-wind proton density, n<sub>sw</sub></label><div><input id="nswNumber" class="num" type="number" min="1" max="40" step="0.5" value="5" aria-label="Density number"> <span class="unit">cm⁻³</span></div></div><input id="nsw" type="range" min="1" max="40" step="0.5" value="5"><div class="range-ends"><span>1 cm⁻³</span><span>40 cm⁻³</span></div></div>
+<div class="field"><div class="field-top"><label for="be">Earth's equatorial surface field, B<sub>E</sub></label><div><input id="beNumber" class="num" type="number" min="15000" max="60000" step="1000" value="30000" aria-label="Earth surface magnetic field number"> <span class="unit">nT</span></div></div><input id="be" type="range" min="15000" max="60000" step="1000" value="30000"><div class="range-ends"><span>15,000 nT</span><span>60,000 nT</span></div><div class="note">Reference field: 30,000 nT.</div></div>
+<div class="field"><div class="field-top"><label for="bz">IMF B<sub>z</sub></label><div><input id="bzNumber" class="num" type="number" min="-20" max="20" step="1" value="0" aria-label="IMF B z number"> <span class="unit">nT</span></div></div><input id="bz" type="range" min="-20" max="20" step="1" value="0"><div class="range-ends"><span>−20 nT</span><span>+20 nT</span></div></div>
+<div class="field"><div class="field-top"><label for="by">IMF B<sub>y</sub></label><div><input id="byNumber" class="num" type="number" min="-20" max="20" step="1" value="0" aria-label="IMF B y number"> <span class="unit">nT</span></div></div><input id="by" type="range" min="-20" max="20" step="1" value="0"><div class="range-ends"><span>−20 nT</span><span>+20 nT</span></div></div>
+<div class="mode-field"><label for="auroraMode">Auroral model</label><select id="auroraMode"><option value="solar-wind" selected>Solar-wind-driven · CH-Aurora-2014</option><option value="kp">Kp-driven · Starkov statistical oval</option></select></div>
+<div class="field" id="kpField" hidden><div class="field-top"><label for="kp">Geomagnetic activity, Kp</label><div><input id="kpNumber" class="num" type="number" min="0" max="6" step="0.1" value="2" aria-label="Kp number"> <span class="unit">index</span></div></div><input id="kp" type="range" min="0" max="6" step="0.1" value="2"><div class="range-ends"><span>0</span><span>6</span></div><div class="note">Kp is independent; it is never inferred from the sliders above.</div></div>
+<div class="actions"><button class="primary" id="reset">Reset to quiet conditions</button><button id="capture">Set comparison</button></div>
+<label class="check"><input type="checkbox" id="compare"> Show previous/comparison boundaries (dashed)</label>
+</section><div class="right"><div class="metrics" aria-live="polite"><div class="metric"><small>Solar-wind dynamic pressure</small><strong id="pressure"></strong></div><div class="metric"><small>Subsolar magnetopause</small><strong id="mpout"></strong></div><div class="metric"><small>Subsolar bow shock</small><strong id="bsout"></strong></div></div>
+<p id="rangeWarning" class="range-warning" aria-live="polite"></p><div class="plots"><section class="panel plot-panel"><div class="plot-head"><h2>Magnetosphere (2D cut)</h2><div class="legend"><span><i class="line shock"></i>Bow shock</span><span><i class="line mp"></i>Magnetopause</span><span><i class="line wind"></i>Solar wind</span><span><i class="line comp"></i>Comparison</span></div></div><canvas id="plot" role="img" aria-label="Equal-scale magnetosphere plot with bow shock, magnetopause, geosynchronous orbit and Earth"></canvas><div class="plot-foot">Sun is right (+X); axes in R<sub>E</sub>. Dashed black circle: geosynchronous orbit (6.6 R<sub>E</sub>).</div></section>
+<section class="panel plot-panel"><div class="plot-head"><h2>Statistical auroral ovals</h2><div class="legend"><span style="color:#7952b3">● North</span><span style="color:#db7c30">● South</span></div><div id="modelName" class="aurora-status"></div><div id="couplingOut" class="aurora-status coupling"></div></div><canvas id="auroraPlot" role="img" aria-label="Northern and Southern polar globes with modelled auroral ovals and latitude lines"></canvas><div class="aurora-readout" aria-live="polite"><span>North equatorward: <strong id="nEqOut"></strong></span><span>North poleward: <strong id="nPolOut"></strong></span><span>South equatorward: <strong id="sEqOut"></strong></span><span>South poleward: <strong id="sPolOut"></strong></span></div><div id="auroraWarning" class="aurora-status" aria-live="polite"></div><div class="plot-foot">Ranges span 24 MLT. North is positive, south negative; CH latitudes are apex, Kp latitudes corrected geomagnetic. Empirical estimates, not observations.</div></section></div></div></div>
+<div class="infogrid">
+<section class="panel info"><h2>Model and assumptions</h2><div class="formula">P<sub>dyn</sub> [nPa] = 1.6726×10⁻⁶ n<sub>p</sub> [cm⁻³] V [km/s]²</div><p>Protons only; dynamic pressure is ρV² with no ½ factor. Helium and thermal pressure are omitted.</p><p><strong>Magnetopause:</strong> Shue et al. (1998): r = r₀[2/(1+cos θ)]<sup>α</sup>; r₀ = [10.22+1.29 tanh(0.184(B<sub>z</sub>+8.14))]P<sub>dyn</sub><sup>−1/6.6</sup> R<sub>E</sub>; α = (0.58−0.007B<sub>z</sub>)(1+0.024 ln P<sub>dyn</sub>). B<sub>z</sub> is in nT; pressure is in nPa.</p><p><strong>Bow shock:</strong> Jelínek et al. (2012): ρ² = 4r<sub>BS,0</sub>(r<sub>BS,0</sub>−x)/1.17², with r<sub>BS,0</sub> = 15.02P<sub>dyn</sub><sup>−1/6.55</sup> R<sub>E</sub> and ρ²=y²+z². All coordinates are in R<sub>E</sub>.</p><p><strong>Surface field:</strong> Both surfaces are scaled by (B<sub>E</sub>/30,000 nT)<sup>1/3</sup> from dipole pressure balance. This is an educational extrapolation, not part of either empirical fit; B<sub>E</sub> does not enter either auroral model.</p><p><strong>Solar-wind aurora:</strong> CH-Aurora-2014 (Xiong &amp; Lühr, 2014) uses the Newell coupling function E<sub>m</sub> = V<sup>4/3</sup>(B<sub>y</sub>²+B<sub>z</sub>²)<sup>1/3</sup>sin<sup>8/3</sup>(θ/2)/1000, θ = atan2(|B<sub>y</sub>|, B<sub>z</sub>), with V in km/s, B in nT and E<sub>m</sub> in the paper's scaled mV/m convention. Each hemisphere and boundary has five ellipse parameters fitted as p₂E<sub>m</sub>²+p₁E<sub>m</sub>+p₀ (Tables 2–3); MLT is evaluated along each ellipse. Slider values represent solar wind sustained for at least the paper's 3 h memory window, so its 30 min equatorward and 15 min poleward delays give the same steady E<sub>m</sub>. No CHAMP observation adjustment is applied. The 2000–2010 fit is an empirical FAC-boundary estimate, not an auroral observation or a real-time forecast.</p><p><strong>Coefficient note:</strong> Table 2 prints 0.10752 for the Southern equatorward semi-y linear coefficient, while Figure 4 prints 1.075 and shows the corresponding expansion. This page uses the published Figure 4 value, 1.075.</p><p><strong>Kp aurora:</strong> Starkov coefficients as presented by Sigernes et al. (2011), with Kp→AL and MLT. Southern Kp boundaries are mirrored from the Northern fit. Kp is independent of solar-wind sliders; 0–6 is shown because high-Kp fits deteriorate.</p></section></div>
+<p class="footnote">References: <a href="https://angeo.copernicus.org/articles/32/623/2014/">Xiong &amp; Lühr (2014), CH-Aurora-2014</a>; <a href="https://doi.org/10.1029/2006JA012015">Newell et al. (2007), coupling function</a>; <a href="https://doi.org/10.1029/98JA01103">Shue et al. (1998)</a>; <a href="https://doi.org/10.1029/2011JA017252">Jelínek et al. (2012)</a>; <a href="https://aurora.unis.no/doc/Sigernes_Oval.pdf">Sigernes et al. (2011), Starkov coefficients</a>. Jelínek et al. recommend their bow-shock fit for dayside low latitudes and 0.6–11 nPa.</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id), ids=['vsw','nsw','be','bz','by','kp'];
+const baseline={vsw:400,nsw:5,be:30000,bz:0,by:0,kp:2};let comparison={...baseline};
+function values(){return Object.fromEntries(ids.map(id=>[id,Number($(id).value)]))}
+function setOne(id,value){const el=$(id),n=Number(value);if(!Number.isFinite(n))return;const v=Math.max(Number(el.min),Math.min(Number(el.max),n));el.value=String(v);$(id+'Number').value=String(v)}
+function calc(v){const pressure=1.6726e-6*v.nsw*v.vsw*v.vsw,scale=Math.cbrt(v.be/30000);
+ const mp=(10.22+1.29*Math.tanh(.184*(v.bz+8.14)))*Math.pow(pressure,-1/6.6)*scale;
+ const alpha=(.58-.007*v.bz)*(1+.024*Math.log(pressure));
+ const bs=15.02*Math.pow(pressure,-1/6.55)*scale;return{pressure,mp,bs,alpha}}
+// Starkov coefficients from Sigernes et al. Table 2: columns A0,A1,A2,A3,phase1,phase2,phase3.
+const pole=[[-.07,-10.06,-4.44,-3.77,-6.61,6.37,-4.48],[24.54,19.83,7.47,7.90,10.17,-1.10,10.16],[-12.53,-9.33,-3.01,-4.73,-5.80,.34,-5.87],[2.15,1.24,.25,.91,1.19,-.38,.98]];
+const equator=[[1.61,-9.59,-12.07,-6.56,-2.22,-23.98,-20.07],[23.21,17.78,17.49,11.44,1.50,42.79,36.67],[-10.97,-7.20,-7.96,-6.73,-.58,-26.96,-24.20],[2.03,.96,1.15,1.31,.08,5.56,5.11]];
+function aurora(kp){const AL=18-12.3*kp+27.2*kp*kp-2*kp*kp*kp,L=Math.log10(AL);
+ const coefs=table=>table[0].map((_,j)=>table[0][j]+table[1][j]*L+table[2][j]*L*L+table[3][j]*L*L*L);
+ const p=coefs(pole),e=coefs(equator);
+ const lat=(c,t)=>90-(c[0]+c[1]*Math.cos(Math.PI*(t+c[4])/12)+c[2]*Math.cos(Math.PI*(2*t+c[5])/12)+c[3]*Math.cos(Math.PI*(3*t+c[6])/12));
+ return{at:t=>({p:lat(p,t),e:lat(e,t)})}}
+// CH-Aurora-2014, Xiong & Lühr (2014), Tables 2-3.
+// Each parameter is [p2,p1,p0] in p2*Em²+p1*Em+p0, all angles in degrees.
+const CH={
+ north:{
+  equatorward:{a:[-.023836,.95470,18.861],b:[-.029566,1.1504,20.562],x:[0,.027827,4.1263],y:[.0016569,-.028855,-.32637],phi:[0,.31147,-3.1555]},
+  poleward:{a:[-.00059729,.26173,12.813],b:[-.029556,.96759,9.5486],x:[0,-.25310,4.5175],y:[.0056513,-.15732,-.39319],phi:[0,1.2831,-8.5358]}
+ },
+ south:{
+  equatorward:{a:[-.013209,.81597,18.559],b:[-.024605,1.075,19.549],x:[0,.044667,3.6946],y:[.00065985,-.011623,-.60436],phi:[0,-.10934,-8.8836]},
+  poleward:{a:[-.00030559,.28870,13.251],b:[-.024073,.82006,11.605],x:[0,-.21674,4.2526],y:[.00070729,-.024479,-1.1330],phi:[0,-1.5508,3.7050]}
+ }
+};
+function chLatitude(coeff,em,mlt){const fit=c=>c[0]*em*em+c[1]*em+c[2];
+ const a=fit(coeff.a),b=fit(coeff.b),x0=fit(coeff.x),y0=fit(coeff.y),phi=fit(coeff.phi)*Math.PI/180;
+ // Exact positive intersection of the MLT ray with the fitted rotated ellipse.
+ // x points to midnight, y to dawn; radius is apex co-latitude in degrees.
+ const lambda=2*Math.PI*mlt/24,c=Math.cos(phi),s=Math.sin(phi);
+ const u=Math.cos(lambda)*c+Math.sin(lambda)*s,v=-Math.cos(lambda)*s+Math.sin(lambda)*c;
+ const h=x0*c+y0*s,k=-x0*s+y0*c;
+ const A=u*u/(a*a)+v*v/(b*b),B=-2*(u*h/(a*a)+v*k/(b*b));
+ const C=h*h/(a*a)+k*k/(b*b)-1,disc=B*B-4*A*C;
+ if(a<=0||b<=0||disc<0)return NaN;
+ const r=(-B+Math.sqrt(disc))/(2*A);return 90-r}
+const defaultMlt=Array.from({length:96},(_,i)=>i/4);
+function calculateAuroralBoundaries(params){
+ const{mode,vsw,nsw,by,bz,kp}=params,mlt=params.mlt===undefined?defaultMlt:params.mlt;
+ const result={model:mode==='solar-wind'?'CH-Aurora-2014 (Xiong & Lühr)':'Starkov / Sigernes Kp oval',
+  coupling:{name:mode==='solar-wind'?'Eₘ':'Kp',value:null,fitValue:null,units:mode==='solar-wind'?'mV/m (paper scaling)':'index'},
+  mlt:Array.isArray(mlt)?mlt.slice():[],north:{equatorward:[],poleward:[]},south:{equatorward:[],poleward:[]},
+  validity:{valid:true,status:'within fit',warnings:[],southMirrored:mode==='kp'}};
+ const fail=message=>{result.validity.valid=false;result.validity.status='invalid';result.validity.warnings.push(message);return result};
+ if(mode!=='solar-wind'&&mode!=='kp')return fail('Unknown auroral model mode.');
+ if(!Array.isArray(mlt)||mlt.length<2||mlt.some((t,i)=>!Number.isFinite(t)||t<0||t>=24||(i>0&&t<=mlt[i-1])))return fail('MLT must be a sorted array of distinct hours in [0,24).');
+ if(mode==='solar-wind'){
+  if(!Number.isFinite(vsw)||vsw<=0||!Number.isFinite(by)||!Number.isFinite(bz))return fail('Finite speed and IMF inputs are required.');
+  if(vsw<250||vsw>1000||Math.abs(by)>20||Math.abs(bz)>20)return fail('Solar-wind input is outside the supported slider range.');
+  const bt=Math.hypot(by,bz),clock=bt===0?0:Math.atan2(Math.abs(by),bz);
+  const em=bt===0?0:Math.pow(vsw,4/3)*Math.pow(bt,2/3)*Math.pow(Math.sin(clock/2),8/3)/1000;
+  const fitEm=Math.min(em,20);result.coupling.value=em;result.coupling.fitValue=fitEm;
+  if(em>20){result.validity.status='capped';result.validity.warnings.push('Eₘ exceeds the published 20 mV/m coefficient-fit range. The statistical auroral ovals use Eₘ = 20 mV/m and stay at that maximum fitted extent; they do not estimate additional expansion.');}
+  if(em<.1)result.validity.warnings.push('Eₘ is below the lowest 0.1 mV/m bin center; this is a small extrapolation of the fitted curves.');
+  if(em>12.5&&em<=20)result.validity.warnings.push('Eₘ exceeds the highest finite activity bin (12.5 mV/m); the fit is supported only by an open-ended bin here.');
+  if(!Number.isFinite(nsw)||nsw<=0)result.validity.warnings.push('Density is invalid, but it is not used by this auroral model.');
+  for(const hemi of ['north','south'])for(const edge of ['equatorward','poleward'])
+   result[hemi][edge]=mlt.map(t=>{const lat=chLatitude(CH[hemi][edge],fitEm,t);return hemi==='south'?-lat:lat});
+ }else{
+  if(!Number.isFinite(kp)||kp<0||kp>6)return fail('Kp must be between 0 and 6.');
+  result.coupling.value=kp;result.coupling.fitValue=kp;
+  const model=aurora(kp);
+  result.north.equatorward=mlt.map(t=>model.at(t).e);
+  result.north.poleward=mlt.map(t=>model.at(t).p);
+  result.south.equatorward=result.north.equatorward.map(x=>-x);
+  result.south.poleward=result.north.poleward.map(x=>-x);
+  result.validity.warnings.push('Southern Kp boundaries are mirrored from the Northern statistical fit.');
+ }
+ for(let i=0;i<mlt.length;i++)for(const hemi of ['north','south']){
+  const eq=Math.abs(result[hemi].equatorward[i]),pol=Math.abs(result[hemi].poleward[i]);
+  if(!Number.isFinite(eq)||!Number.isFinite(pol)||eq<0||pol>90||eq>=pol)return fail('Model boundaries are invalid or cross at one or more MLTs; auroral bands are withheld.');
+ }
+ if(result.validity.warnings.length&&result.validity.status==='within fit')result.validity.status='caution';
+ return result}
+window.calculateAuroralBoundaries=calculateAuroralBoundaries;
+function setup(canvas){const rect=canvas.getBoundingClientRect();if(rect.width<1)return null;const dpr=Math.max(1,devicePixelRatio||1);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,W:rect.width,H:rect.height}}
+function magnetPlot(){const s=setup($('plot'));if(!s)return;const{ctx,W,H}=s;ctx.clearRect(0,0,W,H);
+ const left=42,right=13,top=16,bottom=39,pw=W-left-right,ph=H-top-bottom;
+ // One pixel scale for both axes. The viewport is centered so the dayside remains visible.
+ const scale=Math.min(pw/39,ph/42),cx=left+pw*.45,cy=top+ph/2;
+ const px=x=>cx+x*scale,py=y=>cy-y*scale;
+ ctx.save();ctx.beginPath();ctx.rect(left,top,pw,ph);ctx.clip();ctx.fillStyle='#fbfdff';ctx.fillRect(left,top,pw,ph);
+ const xmin=(left-cx)/scale,xmax=(left+pw-cx)/scale,ymin=(cy-top-ph)/scale,ymax=(cy-top)/scale;
+ ctx.font='10px system-ui';ctx.fillStyle='#627286';
+ for(let x=Math.ceil(xmin);x<=Math.floor(xmax);x++){const major=x%5===0;ctx.beginPath();ctx.moveTo(px(x),py(0)- (major?5:3));ctx.lineTo(px(x),py(0)+(major?5:3));ctx.strokeStyle='#8fa0b2';ctx.lineWidth=1;ctx.stroke();if(major){ctx.beginPath();ctx.moveTo(px(x),top);ctx.lineTo(px(x),top+ph);ctx.strokeStyle=x===0?'#9aabbc':'#e6ecf2';ctx.stroke();ctx.textAlign='center';ctx.fillText(String(x),px(x),top+ph-5)}}
+ for(let y=Math.ceil(ymin);y<=Math.floor(ymax);y++){const major=y%5===0;ctx.beginPath();ctx.moveTo(px(0)-(major?5:3),py(y));ctx.lineTo(px(0)+(major?5:3),py(y));ctx.strokeStyle='#8fa0b2';ctx.stroke();if(major){ctx.beginPath();ctx.moveTo(left,py(y));ctx.lineTo(left+pw,py(y));ctx.strokeStyle=y===0?'#9aabbc':'#e6ecf2';ctx.stroke();ctx.textAlign='left';ctx.fillText(String(y),left+3,py(y)-3)}}
+ // Solar wind enters from the sunward (+X) side.
+ ctx.strokeStyle='#2475c3';ctx.fillStyle='#2475c3';ctx.lineWidth=1.6;for(const y of [-15,-9,-3,3,9,15]){let tail=Math.min(xmax-1,22),head=tail-3;if(tail<11)continue;ctx.beginPath();ctx.moveTo(px(tail),py(y));ctx.lineTo(px(head),py(y));ctx.stroke();ctx.beginPath();ctx.moveTo(px(head),py(y));ctx.lineTo(px(head)+7,py(y)-4);ctx.lineTo(px(head)+7,py(y)+4);ctx.fill()}
+ function curve(r,type,color,dash=false){ctx.save();ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=dash?1.6:2.7;ctx.setLineDash(dash?[6,5]:[]);let first=true;
+ if(type==='mp'){for(let i=0;i<=500;i++){const theta=-2.15+4.3*i/500,rad=r.mp*Math.pow(2/(1+Math.cos(theta)),r.alpha),x=rad*Math.cos(theta),y=rad*Math.sin(theta);if(first){ctx.moveTo(px(x),py(y));first=false}else ctx.lineTo(px(x),py(y))}}
+ else{for(let i=0;i<=500;i++){const y=-26+52*i/500,x=r.bs-1.17*1.17*y*y/(4*r.bs);if(first){ctx.moveTo(px(x),py(y));first=false}else ctx.lineTo(px(x),py(y))}}
+ ctx.stroke();ctx.restore()}
+ if($('compare').checked){const old=calc(comparison);curve(old,'bs','#a8aeb8',true);curve(old,'mp','#a8aeb8',true)}
+ const r=calc(values());curve(r,'bs','#d53535');curve(r,'mp','#16894c');
+ ctx.beginPath();ctx.arc(cx,cy,6.6*scale,0,2*Math.PI);ctx.setLineDash([6,5]);ctx.strokeStyle='#111';ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);
+ // Right half (+X) is white dayside; left half is black nightside.
+ ctx.beginPath();ctx.arc(cx,cy,scale,Math.PI/2,3*Math.PI/2);ctx.closePath();ctx.fillStyle='#111';ctx.fill();
+ ctx.beginPath();ctx.arc(cx,cy,scale,-Math.PI/2,Math.PI/2);ctx.closePath();ctx.fillStyle='#fff';ctx.fill();
+ ctx.beginPath();ctx.arc(cx,cy,scale,0,2*Math.PI);ctx.strokeStyle='#111';ctx.lineWidth=1;ctx.stroke();
+ ctx.restore();ctx.font='12px system-ui';ctx.fillStyle='#617187';ctx.textAlign='center';ctx.fillText('X (Rᴇ)',left+pw/2,H-7);ctx.save();ctx.translate(12,top+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText('Y / Z (Rᴇ)',0,0);ctx.restore()}
+let currentAurora=null;
+function auroraPlot(){const s=setup($('auroraPlot'));if(!s)return;const{ctx,W,H}=s;ctx.clearRect(0,0,W,H);const model=currentAurora;
+ const R=Math.min((W-40)/4,(H-65)/2,118),Y=H/2+6;
+ function globe(cx,south){ctx.save();ctx.beginPath();ctx.arc(cx,Y,R,0,2*Math.PI);ctx.clip();ctx.fillStyle='#f7fbff';ctx.fillRect(cx-R,Y-R,2*R,2*R);
+  // Orthographic view down each magnetic pole: projected radius = R cos(latitude).
+  for(let lat=0;lat<=90;lat+=15){const rad=R*Math.cos(lat*Math.PI/180);ctx.beginPath();ctx.arc(cx,Y,rad,0,2*Math.PI);ctx.strokeStyle=lat%30===0?'#b5c5d6':'#d6e0ea';ctx.lineWidth=1;ctx.stroke();if([0,30,45,60,75,90].includes(lat)){ctx.fillStyle='#53657b';ctx.font='10px system-ui';ctx.textAlign='left';ctx.fillText((south?'−':'+')+lat+'°',cx+rad+2,Y-3)}}
+  function point(t,lat){const a=Math.PI*(t-12)/12,rad=R*Math.cos(Math.abs(lat)*Math.PI/180);return[cx+rad*Math.sin(a),Y-rad*Math.cos(a)]}
+  if(model&&model.validity.valid){const hemi=south?model.south:model.north,n=model.mlt.length;
+   ctx.beginPath();for(let i=0;i<=n;i++){const j=i%n,p=point(i===n?24:model.mlt[j],hemi.equatorward[j]);if(i===0)ctx.moveTo(...p);else ctx.lineTo(...p)}
+   for(let i=n;i>=0;i--){const j=i%n;ctx.lineTo(...point(i===n?24:model.mlt[j],hemi.poleward[j]))}ctx.closePath();ctx.fillStyle=south?'rgba(220,124,48,.44)':'rgba(121,82,179,.42)';ctx.fill();
+   for(const key of ['equatorward','poleward']){ctx.beginPath();for(let i=0;i<=n;i++){const j=i%n,p=point(i===n?24:model.mlt[j],hemi[key][j]);if(i===0)ctx.moveTo(...p);else ctx.lineTo(...p)}ctx.strokeStyle=south?'#b45c1a':'#6540a3';ctx.lineWidth=1.4;ctx.stroke()}}
+  ctx.restore();ctx.beginPath();ctx.arc(cx,Y,R,0,2*Math.PI);ctx.strokeStyle='#8195aa';ctx.stroke();ctx.textAlign='center';ctx.fillStyle=south?'#a65c1f':'#6540a3';ctx.font='bold 13px system-ui';ctx.fillText(south?'South':'North',cx,Y-R-14);ctx.font='10px system-ui';ctx.fillStyle='#617187';ctx.fillText('12 MLT',cx,Y-R-2);ctx.fillText('00 MLT',cx,Y+R+13);ctx.fillText('06',cx-R-10,Y+3);ctx.fillText('18',cx+R+10,Y+3)}
+ globe(W*.27,false);globe(W*.73,true);
+}
+function update(){const v=values(),r=calc(v);currentAurora=calculateAuroralBoundaries({mode:$('auroraMode').value,vsw:v.vsw,nsw:v.nsw,by:v.by,bz:v.bz,kp:v.kp,mlt:defaultMlt});
+ $('pressure').innerHTML=r.pressure.toFixed(2)+' <span>nPa</span>';$('mpout').innerHTML=r.mp.toFixed(2)+' <span>R<sub>E</sub></span>';$('bsout').innerHTML=r.bs.toFixed(2)+' <span>R<sub>E</sub></span>';
+ $('rangeWarning').textContent=r.pressure<.6||r.pressure>11?'Bow-shock pressure is outside the published 0.6–11 nPa fit range; treat its position as an extrapolation.':'';
+ $('modelName').textContent='Active model: '+currentAurora.model;
+ const c=currentAurora.coupling;$('couplingOut').textContent=c.name+' = '+(c.value===null?'—':c.value.toFixed(c.name==='Kp'?1:2))+' '+c.units+(c.fitValue!==null&&c.fitValue<c.value?' · oval uses capped Eₘ = '+c.fitValue.toFixed(2)+' mV/m':'');
+ function range(hemi,key){const a=currentAurora[hemi][key];if(!currentAurora.validity.valid||!a.length)return'—';return Math.min(...a).toFixed(0)+'° to '+Math.max(...a).toFixed(0)+'°'}
+ $('nEqOut').textContent=range('north','equatorward');$('nPolOut').textContent=range('north','poleward');
+ $('sEqOut').textContent=range('south','equatorward');$('sPolOut').textContent=range('south','poleward');
+ $('auroraWarning').textContent=currentAurora.validity.warnings.join(' ');$('auroraWarning').className='aurora-status'+(currentAurora.validity.warnings.length?' warning':'');
+ magnetPlot();auroraPlot()}
+for(const id of ids){$(id).addEventListener('input',()=>{$(id+'Number').value=$(id).value;update()});$(id+'Number').addEventListener('input',()=>{if($(id+'Number').value!==''&&Number.isFinite(Number($(id+'Number').value))){setOne(id,$(id+'Number').value);update()}});$(id+'Number').addEventListener('change',()=>{setOne(id,$(id+'Number').value);update()})}
+$('auroraMode').addEventListener('change',()=>{$('kpField').hidden=$('auroraMode').value!=='kp';update()});
+$('reset').addEventListener('click',()=>{for(const id of ids)setOne(id,baseline[id]);$('auroraMode').value='solar-wind';$('kpField').hidden=true;update()});
+$('capture').addEventListener('click',()=>{comparison=values();$('compare').checked=true;update();$('capture').textContent='Comparison saved';setTimeout(()=>$('capture').textContent='Set comparison',1200)});
+$('compare').addEventListener('change',update);window.addEventListener('resize',update);if('ResizeObserver'in window){const ro=new ResizeObserver(update);ro.observe($('plot'));ro.observe($('auroraPlot'))}update();
+})();
+</script></body></html>
